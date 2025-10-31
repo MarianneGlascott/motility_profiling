@@ -1,0 +1,4 @@
+Top 3 SPEARMAN associations (q < 0.05, n ≥ 15):
+• log_mobile–log_mobile: r = 0.36, n = 317, q = 0.000
+• motility_prop–motility_prop: r = 0.36, n = 317, q = 0.000
+• log_settlement–log_settlement: r = 0.32, n = 317, q = 0.000

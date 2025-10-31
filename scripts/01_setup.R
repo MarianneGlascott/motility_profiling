@@ -13,10 +13,12 @@
 #   Define export helpers (PNG/TIFF/PDF)
 #   Set up renv (restore/snapshot) and GitHub remote (optional)
 #   Provide small utilities (logging, safe package installer)
+# Input:
+# Output:
+# Reproducability: https://github.com/MarianneGlascott/motility_profiling.git
 # Notes
 # - Paths are project‑relative using here::here().
 # - Figures saved to plots/ (screen/EDA) and figures/ (pub‑quality) in PNG, TIFF, PDF.
-# - Git: points origin to https://github.com/MarianneGlascott/motility_profiling.git
 # - Designed to work from RStudio Project: C:/Motility_Profiling/Motility_Profiling.Rproj
 # ============================================================================
 # Contents:
@@ -270,20 +272,3 @@ message("✔ 01_setup complete. Root: ", DIR_ROOT)
 #===============================================================================
 # END
 #===============================================================================
-## Github fix
-# Create a tiny file so the first commit isn’t empty
-if (!file.exists(".here")) file.create(".here")
-
-# Init repo only if .git isn’t present
-if (!dir.exists(".git")) {
-  system("git init")
-}
-
-# (Optional) set your user identity for this repo if not already set
-system('git config user.name "Marianne Glascott"')
-system('git config user.email "marianne.glascott@sussex.ac.uk"')
-
-# Stage everything and commit
-system('git add .')
-system('git commit -m "Initial commit (project scaffold)"')
-

@@ -1,0 +1,4 @@
+Top 3 PEARSON associations (q < 0.05, n ≥ 15):
+• log_settlement–log_settlement: r = 0.64, n = 36, q = 0.000
+• log_stationary–log_stationary: r = -0.54, n = 36, q = 0.002
+• log_total–log_total: r = -0.43, n = 36, q = 0.016

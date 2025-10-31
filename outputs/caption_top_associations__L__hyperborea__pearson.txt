@@ -1,0 +1,2 @@
+Top 1 PEARSON associations (q < 0.05, n ≥ 15):
+• log_settlement–log_settlement: r = 0.55, n = 32, q = 0.006
