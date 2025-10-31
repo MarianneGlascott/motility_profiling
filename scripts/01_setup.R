@@ -196,65 +196,64 @@ show_and_save <- function(p, filename, width = 170, height = 120,
 
 # Call now (restore if lock exists)
 .setup_renv(snapshot = FALSE)
-#===============================================================================
-# 8. Git/GitHub remote (optional; no error if Git absent)
-#===============================================================================
-setup_github_remote <- function(url = "https://github.com/MarianneGlascott/motility_profiling.git") {
-  if (nzchar(Sys.which("git"))) {
-    .install_if_missing(c("usethis","gitcreds"))
-    suppressPackageStartupMessages({ library(usethis) })
-    # ensure a repo exists locally
-    if (!fs::file_exists(here::here(".git"))) usethis::use_git()
-    # set or update origin
-    try(usethis::use_git_remote("origin", url, overwrite = TRUE), silent = TRUE)
-    # detect branch name
-    br <- tryCatch(system("git rev-parse --abbrev-ref HEAD", intern = TRUE), error = function(e) "main")
-    if (length(br) == 0 || br %in% c("HEAD","") ) br <- "main"
-    # push (won't error fatally if auth missing)
-    try(system(glue('git push -u origin {br}'), intern = TRUE), silent = TRUE)
-    message("Git remote set to: ", url)
-  } else {
+# ===============================================================================
+# 8. Git/GitHub remote (safe, optional; no push unless you call it)
+# ===============================================================================
+setup_github_remote <- function(
+    url = "https://github.com/MarianneGlascott/motility_profiling.git",
+    branch = "main",
+    do_push = FALSE
+) {
+  if (!nzchar(Sys.which("git"))) {
     message("Git not found on PATH; skipped GitHub setup.")
+    return(invisible(FALSE))
   }
+  
+  # 1) Init repo if needed
+  if (!dir.exists(".git")) {
+    system("git init")
+  }
+  
+  # 2) Ensure a user identity (repo local)
+  # (Skip silently if already set)
+  system('git config user.name', intern = TRUE)
+  if (nzchar(Sys.which("git")) && !nzchar(Sys.getenv("GIT_AUTHOR_NAME"))) {
+    # Set if empty (customize if you prefer)
+    system('git config user.name "Marianne Glascott"')
+    system('git config user.email "marianne.glascott@sussex.ac.uk"')
+  }
+  
+  # 3) Ensure at least one commit so a branch exists
+  if (!file.exists(".here")) file.create(".here")  # harmless tiny file
+  # Stage anything new
+  system("git add .")
+  # Commit only if there are staged changes
+  status <- try(system("git status --porcelain", intern = TRUE), silent = TRUE)
+  if (!inherits(status, "try-error") && length(status) > 0) {
+    system('git commit -m "Initial commit (project scaffold)"')
+  }
+  
+  # 4) Set or update 'origin'
+  remotes <- try(system("git remote", intern = TRUE), silent = TRUE)
+  if (inherits(remotes, "try-error") || !("origin" %in% remotes)) {
+    system(paste("git remote add origin", shQuote(url)))
+  } else {
+    system(paste("git remote set-url origin", shQuote(url)))
+  }
+  
+  # 5) Ensure branch name, switch/rename, and set upstream if pushing
+  system(paste("git branch -M", branch))
+  
+  if (isTRUE(do_push)) {
+    # First push will prompt for auth if needed
+    invisible(try(system(paste("git push -u origin", branch), intern = TRUE), silent = TRUE))
+    message("Git remote set to: ", url, " | branch: ", branch, " (push attempted)")
+  } else {
+    message("Git remote set to: ", url, " | branch prepared: ", branch, " (no push)")
+  }
+  
+  invisible(TRUE)
 }
-
-# Uncomment to run first time
-# setup_github_remote()  #first time only
-
-# FIX:
-# 1) Make sure Git + packages are ready
-install.packages(c("usethis","gert"), quiet = TRUE)
-
-# 2) Initialize a repo if none exists yet
-if (!gert::git_is_repo(".")) gert::git_init()
-
-# 3) Ensure at least one commit (needed before pushing)
-if (nrow(gert::git_log(max = 1)) == 0) {
-  gert::git_add(".")                  # stage everything
-  gert::git_commit("Initial commit")  # create first commit
-}
-
-# 4) Set the remote and push current branch
-url <- "https://github.com/MarianneGlascott/motility_profiling.git"
-rem <- gert::git_remote_list()
-if (!"origin" %in% rem$name) {
-  gert::git_remote_add("origin", url)
-} else {
-  gert::git_remote_set_url("origin", url)
-}
-
-# Detect (or create) current branch and push
-br <- gert::git_branch()
-current <- br$name[br$head]
-if (is.na(current) || current == "") {
-  current <- "main"
-  if (!"main" %in% br$name) gert::git_branch_create("main")
-  gert::git_branch_switch("main")
-}
-
-# Push and set upstream (you may get an auth prompt)
-try(gert::git_push(remote = "origin", set_upstream = TRUE), silent = TRUE)
-message("✅ Remote 'origin' set and push attempted on branch: ", current)
 
 #===============================================================================
 # 9. Logging helper
@@ -271,3 +270,20 @@ message("✔ 01_setup complete. Root: ", DIR_ROOT)
 #===============================================================================
 # END
 #===============================================================================
+## Github fix
+# Create a tiny file so the first commit isn’t empty
+if (!file.exists(".here")) file.create(".here")
+
+# Init repo only if .git isn’t present
+if (!dir.exists(".git")) {
+  system("git init")
+}
+
+# (Optional) set your user identity for this repo if not already set
+system('git config user.name "Marianne Glascott"')
+system('git config user.email "marianne.glascott@sussex.ac.uk"')
+
+# Stage everything and commit
+system('git add .')
+system('git commit -m "Initial commit (project scaffold)"')
+
