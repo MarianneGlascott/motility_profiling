@@ -363,7 +363,6 @@ m_gam_nb2 <- gam(
 summary(m_gam_nb2)
 gam.check(m_gam_nb2)
 
-
 m_gam_nb3 <- mgcv::gam(
   settlement_count ~ 
     s(motility_prop, k = 7) + 
@@ -521,7 +520,6 @@ pA <- ggplot(nd_A, aes(motility_prop, rate_per_1k)) +
        y = "Predicted settlement per 1,000 cells",
        title = "A. Day-4 settlement rate rises steeply with motility") +
   theme_classic(base_size = 11)
-
 ## ---------- Panel B: Age curve at motility = 0.5 (per species) ----------
 nd_B <- expand.grid(
   motility_prop    = 0.50,              # fixed to show age effect
@@ -554,7 +552,6 @@ w_mm <- 170; h_mm <- 120
 ggsave("figure_settlement_per1k__motility_day_panels.png", fig, width = w_mm, height = h_mm, units = "mm", dpi = 300)
 ggsave("figure_settlement_per1k__motility_day_panels.tiff", fig, width = w_mm, height = h_mm, units = "mm", dpi = 300, compression = "lzw")
 ggsave("figure_settlement_per1k__motility_day_panels.pdf",  fig, width = w_mm, height = h_mm, units = "mm")
-
 
 #===============================================================================
 # Developing explanatoiry visual
@@ -613,7 +610,6 @@ nd_B <- expand.grid(
   species          = species_lvls,
   total_cell_count = tot_med
 )
-
 pB_pred <- predict(mod, newdata = nd_B, type = "link", se.fit = TRUE)
 nd_B <- nd_B |>
   mutate(rate_per_1k = exp(pB_pred$fit) * 1000,
@@ -632,7 +628,6 @@ pB <- ggplot(nd_B, aes(as.numeric(as.character(day)), rate_per_1k, group = speci
 
 # Show on screen:
 print(pB)
-
 ## ---------- Combine and save (and also show) ----------
 fig <- pA / pB + plot_layout(heights = c(1, 1.05))
 
@@ -647,15 +642,6 @@ ggsave("C:/Motility_Profiling/plots/figure_settlement_per1k__motility_day_panels
        fig, width = w_mm, height = h_mm, units = "mm", dpi = 300, compression = "lzw")
 ggsave("C:/Motility_Profiling/plots/figure_settlement_per1k__motility_day_panels.pdf",
        fig, width = w_mm, height = h_mm, units = "mm")
-
-
-
-
-
-
-
-
-
 #===============================================================================
 # 7. Negative-binomial GAM (rate of settlement with offset)
 # ==============================================================================
@@ -672,9 +658,6 @@ m_gam_nb <- mgcv::gam(
 
 summary(m_gam_nb)
 mgcv::gam.check(m_gam_nb)   # quick residual/k-index checks
-
-
-
 #===============================================================================
 # Diagnostics
 # DHARMa residual simulation for GAM via predict:
@@ -699,8 +682,6 @@ pred <- pred %>%
          lo = exp(conf.low) * 1000,
          hi = exp(conf.high) * 1000)
 head(pred)
-
-
 #===============================================================================
 # Piecewise (“hinge”) model to capture the ~0.5 threshold
 library(glmmTMB)
@@ -719,13 +700,11 @@ m_hinge_nb <- glmmTMB(
 )
 
 summary(m_hinge_nb)
-
 #===============================================================================
 # Diagnostics
 simulationOutput <- simulateResiduals(m_hinge_nb, n = 1000)
 plot(simulationOutput)
 testDispersion(simulationOutput)
-
 #===============================================================================
 # Alternative: partial Spearman (settlement ↔ motility, controlling age)
 library(ppcor)
@@ -738,16 +717,12 @@ pc <- pcor.test(
   method = "spearman"
 )
 pc # $estimate, $p.value
-
 #===============================================================================
 # control both day and species
 pc2 <- pcor.test(d_spore$motility_prop,
                  d_spore$settlement_count,
                  d_spore[, c("day","species")], method = "spearman")
 pc2
-
-
-
 #===============================================================================
 # END
 # ==============================================================================
