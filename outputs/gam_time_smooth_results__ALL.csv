@@ -1,2 +1,2 @@
-term,edf,F,p
-s(days_from_start),1.0001996754976494,44.694886733301885,0
+term,edf,F,p,analysis,model_family,weights,script,git_repo,git_commit,date_run
+s(days_from_start),1.0001996754976494,44.694886733301885,0,Motility ~ culture age (GAM smooth),gaussian,n per day,02_summary.R,https://github.com/MarianneGlascott/motility_profiling.git,e706eaaa5d34d95e9bdf67f0e3ff1c1037f2ded2,2026-01-06

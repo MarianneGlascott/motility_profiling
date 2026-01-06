@@ -4,8 +4,8 @@
 # Author:      Marianne Glascott (with ChatGPT assistant)
 # Affiliation: School of Life Sciences, University of Sussex
 # Date:        2025-10-31
-# Version:     1.5
-# Repositry    https://github.com/MarianneGlascott/motility_profiling.git
+# Version:     1.6 (analysis complete; manuscript-linked)
+# Repository   https://github.com/MarianneGlascott/motility_profiling.git
 # ==============================================================================
 # Description
 #   Import clean culture-level CSV (642 rows)
@@ -428,4 +428,78 @@ res_all$gam_tbl
 # term                 edf     F     p
 # <chr>              <dbl> <dbl> <dbl>
 #  1 s(days_from_start)  1.00  44.7     0
+
+#===============================================================================
+# Make the GAM auditable
+#===============================================================================
+git_remote <- tryCatch(system("git remote get-url origin", intern = TRUE), error = function(e) NA)
+git_commit <- tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA)
+
+gam_tbl <- gam_tbl |>
+  dplyr::mutate(
+    analysis     = "Motility ~ culture age (GAM smooth)",
+    model_family = "gaussian",
+    weights      = "n per day",
+    script       = "02_summary.R",
+    git_repo     = git_remote,
+    git_commit   = git_commit,
+    date_run     = Sys.Date()
+  )
+
+
+#===============================================================================
+# Logic note - Why Gaussian GAM used
+#===============================================================================
+# NOTE:
+# GAM fitted with gaussian family to test for temporal curvature in motility_prop.
+# Binomial formulation was not used here because cell-count denominators
+# vary across cultures and days; curvature (edf) is the inference target.
+
+#===============================================================================
+# Save the fitted GAM object
+#===============================================================================
+saveRDS(
+  gam_fit,
+  file.path(DIR_OUTPUTS, glue("gam_time_smooth_model__{tag}.rds"))
+)
+# ==============================================================================
+# Mutata the returned object
+#===============================================================================
+res_all$gam_tbl <- res_all$gam_tbl |>
+  dplyr::mutate(
+    analysis     = "Motility ~ culture age (GAM smooth)",
+    model_family = "gaussian",
+    weights      = "n per day",
+    script       = "02_summary.R",
+    git_repo     = tryCatch(system("git remote get-url origin", intern = TRUE), error = function(e) NA),
+    git_commit   = tryCatch(system("git rev-parse HEAD", intern = TRUE), error = function(e) NA),
+    date_run     = Sys.Date()
+  )
+
+# overwrite the CSV with enriched metadata
+readr::write_csv(
+  res_all$gam_tbl,
+  file.path(DIR_OUTPUTS, "gam_time_smooth_results__ALL.csv")
+)
+# ==============================================================================
+# RESULTS PROVENANCE
+# Key manuscript result:
+#   GAM smooth of motility_prop ~ days_from_start
+#   edf = 1.00, F = 44.7, p < 0.001
+#
+# Stored outputs:
+#   outputs/gam_time_smooth_results__ALL.csv
+#   outputs/gam_time_smooth_model__ALL.rds
+#
+# Figure:
+#   figures/motility_prop_over_time_GAM_weighted__ALL.*
+#
+# Script:
+#   02_summary.R (this file)
+
+
+#===============================================================================
+# END
+#===============================================================================
+
 
